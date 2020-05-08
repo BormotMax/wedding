@@ -10882,12 +10882,3 @@ a.text-dark:focus {
   }
 }
 
-.admin-table .action-group {
-  display: flex;
-}
-
-.admin-table .action-group > form,
-.admin-table .action-group > button {
-  margin: 0 5px;
-}
-
