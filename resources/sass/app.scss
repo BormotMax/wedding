@@ -1,1 +1,17 @@
-//
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/scss/bootstrap';
+
+.admin-table {
+    .action-group {
+        display: flex;
+        >form, >button {
+            margin: 0 5px;
+        }
+    }
+}
