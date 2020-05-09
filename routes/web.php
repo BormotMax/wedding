@@ -22,6 +22,12 @@ Route::middleware('auth')->group(function() {
     Route::middleware('admin')->prefix('admin')->group(function() {
         Route::get('/', 'AdminController@index')->name('admin.main');
         Route::resource('users', 'UsersManagementController');
-        Route::resource('files', 'FilesManagementController');
+        Route::resource('files', 'FilesController');
+        Route::resource('folders', 'FoldersController');
+        Route::put('files/access/{file}', 'FilesController@updateAccess');
+        Route::put('folders/access/{folder}', 'FoldersController@updateAccess');
     });
+    Route::get('files/get', 'FilesController@get');
+    Route::get('folders/get', 'FoldersController@get');
+    Route::get('roles', 'RolesController@index');
 });

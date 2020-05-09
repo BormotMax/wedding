@@ -11,6 +11,9 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-8">
+            <files-tree />
+        </div>
     </div>
 </template>
 
@@ -32,13 +35,14 @@
                 formData.append('file', this.file);
                 formData.append('_token', this.csrf);
                 const url = process.env.MIX_API_URL + '/admin/files';
-                console.log('url', url);
                 axios.post(url, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 }).then((res) => {
-                    console.log('result', res);
+                    this.$refs.file.value = '';
+                    this.file = '';
+                    this.$emit('newFile');
                 }).catch((err) => {
                     console.log('error', err);
                 });

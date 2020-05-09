@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\Role;
 
 class File extends Model
 {
@@ -25,8 +26,14 @@ class File extends Model
     {
         do {
             $name = Str::random(25);
+            $fileName = "{$name}.{$ext}";
             $path = "files/{$name}.{$ext}";
         } while (File::where('path', $path)->exists());
-        return $path;
+        return $fileName;
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'hiden_files');
     }
 }

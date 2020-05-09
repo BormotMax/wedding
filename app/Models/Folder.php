@@ -17,4 +17,9 @@ class Folder extends Model
     protected $fillable = [
         'name', 'parent_folder_id'
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'hiden_folders', 'folder_id', 'role_id');
+    }
 }
