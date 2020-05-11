@@ -1,11 +1,11 @@
 <template>
     <div class="folder-tree">
         <span class="badge badge-secondary title">{{folder.name}}</span>
-        <span v-if="move">
+        <span v-if="move && !onlyView">
             <span class="b  adge badge-warning action" @click="$eventBus.$emit('moveHere', folder.id)">move here</span>
         </span>
-        <span v-if="!move" class="badge badge-info action" @click="openAddFolder()">add folder</span>
-        <span v-if="!move && folder.name !== 'root'">
+        <span v-if="!move && !onlyView" class="badge badge-info action" @click="openAddFolder()">add folder</span>
+        <span v-if="!move && folder.name !== 'root' && !onlyView">
             <span class="badge badge-warning action" @click="openEditFolder(folder)">rename</span>
             <span class="badge badge-info action" @click="openAccessFolder(folder)">access</span>
             <span class="badge badge-danger action" @click="openDeleteFolder(folder)">delete</span>
@@ -50,10 +50,12 @@
             <div v-if="!move">
                 <div v-for="file in folder.files" :key="file.id">
                     <span class="badge badge-light">{{file.name}}</span>
-                    <span class="badge badge-warning action" @click="$eventBus.$emit('moveFile', file)">move</span>
-                    <span class="badge badge-success action" @click="openEditFile(file)">rename</span>
-                    <span class="badge badge-info action" @click="openAccessFile(file)">access</span>
-                    <span class="badge badge-danger action" @click="openDeletingFile(file)">delete</span>
+                    <span v-if="!onlyView">
+                        <span class="badge badge-warning action" @click="$eventBus.$emit('moveFile', file)">move</span>
+                        <span class="badge badge-success action" @click="openEditFile(file)">rename</span>
+                        <span class="badge badge-info action" @click="openAccessFile(file)">access</span>
+                        <span class="badge badge-danger action" @click="openDeletingFile(file)">delete</span>
+                    </span>
                 </div>
                 <div v-if="isRanamingFile" class="form-inline">
                     <label>edit file name</label>
@@ -87,7 +89,7 @@
                 </div>
             </div>
             <div v-for="subFolder in folder.folders" :key="subFolder.id">
-                <folder-tree :folder="subFolder" :move="move" :roles="roles"/>
+                <folder-tree :folder="subFolder" :move="move" :roles="roles" :only-view="onlyView"/>
             </div>
         </div>
     </div>
@@ -102,7 +104,11 @@
                 type: Boolean,
                 default: false
             },
-            roles: Array
+            roles: Array,
+            onlyView: {
+                type: Boolean,
+                default: false
+            }
         },
         data() {
             return {

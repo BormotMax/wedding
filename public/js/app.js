@@ -2036,6 +2036,12 @@ __webpack_require__.r(__webpack_exports__);
       roles: []
     };
   },
+  props: {
+    onlyView: {
+      type: Boolean,
+      "default": false
+    }
+  },
   computed: {
     apiHeaders: function apiHeaders() {
       return {
@@ -2390,6 +2396,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
@@ -2398,7 +2406,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       type: Boolean,
       "default": false
     },
-    roles: Array
+    roles: Array,
+    onlyView: {
+      type: Boolean,
+      "default": false
+    }
   },
   data: function data() {
     return {
@@ -38949,7 +38961,12 @@ var render = function() {
       "div",
       [
         _c("folder-tree", {
-          attrs: { folder: _vm.tree.root, move: _vm.moveMode, roles: _vm.roles }
+          attrs: {
+            folder: _vm.tree.root,
+            move: _vm.moveMode,
+            roles: _vm.roles,
+            "only-view": _vm.onlyView
+          }
         })
       ],
       1
@@ -38983,7 +39000,7 @@ var render = function() {
       _vm._v(_vm._s(_vm.folder.name))
     ]),
     _vm._v(" "),
-    _vm.move
+    _vm.move && !_vm.onlyView
       ? _c("span", [
           _c(
             "span",
@@ -39000,7 +39017,7 @@ var render = function() {
         ])
       : _vm._e(),
     _vm._v(" "),
-    !_vm.move
+    !_vm.move && !_vm.onlyView
       ? _c(
           "span",
           {
@@ -39015,7 +39032,7 @@ var render = function() {
         )
       : _vm._e(),
     _vm._v(" "),
-    !_vm.move && _vm.folder.name !== "root"
+    !_vm.move && _vm.folder.name !== "root" && !_vm.onlyView
       ? _c("span", [
           _c(
             "span",
@@ -39298,57 +39315,61 @@ var render = function() {
                       _vm._v(_vm._s(file.name))
                     ]),
                     _vm._v(" "),
-                    _c(
-                      "span",
-                      {
-                        staticClass: "badge badge-warning action",
-                        on: {
-                          click: function($event) {
-                            return _vm.$eventBus.$emit("moveFile", file)
-                          }
-                        }
-                      },
-                      [_vm._v("move")]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "span",
-                      {
-                        staticClass: "badge badge-success action",
-                        on: {
-                          click: function($event) {
-                            return _vm.openEditFile(file)
-                          }
-                        }
-                      },
-                      [_vm._v("rename")]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "span",
-                      {
-                        staticClass: "badge badge-info action",
-                        on: {
-                          click: function($event) {
-                            return _vm.openAccessFile(file)
-                          }
-                        }
-                      },
-                      [_vm._v("access")]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "span",
-                      {
-                        staticClass: "badge badge-danger action",
-                        on: {
-                          click: function($event) {
-                            return _vm.openDeletingFile(file)
-                          }
-                        }
-                      },
-                      [_vm._v("delete")]
-                    )
+                    !_vm.onlyView
+                      ? _c("span", [
+                          _c(
+                            "span",
+                            {
+                              staticClass: "badge badge-warning action",
+                              on: {
+                                click: function($event) {
+                                  return _vm.$eventBus.$emit("moveFile", file)
+                                }
+                              }
+                            },
+                            [_vm._v("move")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "span",
+                            {
+                              staticClass: "badge badge-success action",
+                              on: {
+                                click: function($event) {
+                                  return _vm.openEditFile(file)
+                                }
+                              }
+                            },
+                            [_vm._v("rename")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "span",
+                            {
+                              staticClass: "badge badge-info action",
+                              on: {
+                                click: function($event) {
+                                  return _vm.openAccessFile(file)
+                                }
+                              }
+                            },
+                            [_vm._v("access")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "span",
+                            {
+                              staticClass: "badge badge-danger action",
+                              on: {
+                                click: function($event) {
+                                  return _vm.openDeletingFile(file)
+                                }
+                              }
+                            },
+                            [_vm._v("delete")]
+                          )
+                        ])
+                      : _vm._e()
                   ])
                 }),
                 _vm._v(" "),
@@ -39539,7 +39560,12 @@ var render = function() {
             { key: subFolder.id },
             [
               _c("folder-tree", {
-                attrs: { folder: subFolder, move: _vm.move, roles: _vm.roles }
+                attrs: {
+                  folder: subFolder,
+                  move: _vm.move,
+                  roles: _vm.roles,
+                  "only-view": _vm.onlyView
+                }
               })
             ],
             1

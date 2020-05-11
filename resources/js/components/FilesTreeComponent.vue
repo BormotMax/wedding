@@ -2,7 +2,7 @@
     <div class="container">
         <h2>Files</h2>
         <div>
-            <folder-tree :folder="tree.root" :move="moveMode" :roles="roles"/>
+            <folder-tree :folder="tree.root" :move="moveMode" :roles="roles" :only-view="onlyView"/>
         </div>
     </div>
 </template>
@@ -18,6 +18,12 @@
                 moveMode: false,
                 movingFile: null,
                 roles: [],
+            }
+        },
+        props: {
+            onlyView: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {

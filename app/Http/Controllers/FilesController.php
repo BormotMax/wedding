@@ -9,7 +9,7 @@ use Illuminate\Routing\Controller as BaseController;
 use App\Models\{User, Role, File, Folder};
 use App\Http\Requests\{UpdateFileRequest, UpdateAccessRequest};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Storage, Auth};
 
 class FilesController extends BaseController
 {
@@ -59,7 +59,12 @@ class FilesController extends BaseController
      */
     public function get()
     {
-        $files = File::with('roles')->get();
+        $user = Auth::user();
+        $roleId = $user->role->id;
+
+        $files = File::whereDoesntHave('roles', function ($query) use ($roleId) {
+            $query->where('roles.id', '<>', $roleId);
+        })->with('roles')->get();
         return response()->json([
             'data' => [
                 'files' => $files
@@ -113,7 +118,7 @@ class FilesController extends BaseController
      */
     public function updateAccess(UpdateAccessRequest $request, File $file)
     {
-        $file->roles()->delete();
+        $file->roles()->detach();
         foreach ($request->roles as $roleId) {
             $file->roles()->attach(Role::find($roleId));
         }

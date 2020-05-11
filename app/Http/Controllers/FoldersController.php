@@ -10,6 +10,7 @@ use App\Models\{User, Role, File, Folder};
 use App\Http\Requests\{StoreFolderRequest, UpdateFolderRequest, UpdateAccessRequest};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class FoldersController extends BaseController
 {
@@ -44,7 +45,13 @@ class FoldersController extends BaseController
      */
     public function get()
     {
-        $folders = Folder::with('roles')->get();
+        $user = Auth::user();
+        $roleId = $user->role->id;
+
+        $folders = Folder::whereDoesntHave('roles', function ($query) use ($roleId) {
+            $query->where('roles.id', '<>', $roleId);
+        })->with('roles')->get();
+
         return response()->json([
             'data' => [
                 'folders' => $folders
@@ -109,7 +116,7 @@ class FoldersController extends BaseController
      */
     public function updateAccess(UpdateAccessRequest $request, Folder $folder)
     {
-        $folder->roles()->delete();
+        $folder->roles()->detach();
         foreach ($request->roles as $roleId) {
             $folder->roles()->attach(Role::find($roleId));
         }

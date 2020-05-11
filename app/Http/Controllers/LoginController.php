@@ -39,6 +39,15 @@ class LoginController extends BaseController
             return redirect()->route('admin.main');
         }
 
-        return view('login', ['error' => 'only for admin']);
+        return redirect()->route('user.cabinet');
+    }
+
+    /**
+     * Sign out
+     */
+    public function logout()
+    {
+        Auth::logout();
+        return redirect()->route('login.page');
     }
 }

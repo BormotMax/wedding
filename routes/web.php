@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('login');
 });
-Route::get('login', 'LoginController@index');
+Route::get('login', 'LoginController@index')->name('login.page');
 Route::post('login', 'LoginController@login')->name('login');
 Route::middleware('auth')->group(function() {
     Route::middleware('admin')->prefix('admin')->group(function() {
@@ -27,7 +27,9 @@ Route::middleware('auth')->group(function() {
         Route::put('files/access/{file}', 'FilesController@updateAccess');
         Route::put('folders/access/{folder}', 'FoldersController@updateAccess');
     });
+    Route::get('/', 'UserController@index')->name('user.cabinet');
     Route::get('files/get', 'FilesController@get');
     Route::get('folders/get', 'FoldersController@get');
     Route::get('roles', 'RolesController@index');
+    Route::get('exit', 'LoginController@logout');
 });
