@@ -67,6 +67,15 @@ class FoldersController extends BaseController
      */
     public function update(UpdateFolderRequest $request, Folder $folder)
     {
+        $parentId = $request->has('parent_folder_id') ? $request->parent_folder_id: $folder->parent_folder_id;
+        $name = $request->has('name') ? $request->name: $folder->name;
+        if (
+            Folder::where('name', $name)->where('parent_folder_id', $parentId)->exists()
+        ) {
+            return response()->json([
+                'error' => 'folder with this name already exists in this folder'
+            ]);
+        }
         $folder->update($request->all());
         return response()->json([
             'data' => 

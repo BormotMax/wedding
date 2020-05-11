@@ -57,36 +57,6 @@
                         <span class="badge badge-danger action" @click="openDeletingFile(file)">delete</span>
                     </span>
                 </div>
-                <div v-if="isRanamingFile" class="form-inline">
-                    <label>edit file name</label>
-                    <input type="text" v-model="editingFile.name" class="form-cotrol"/>
-                    <button class="btn btn-success btn-sm" @click="handleEditFile()">update</button>
-                    <button class="btn btn-warning btn-sm" @click="closeAllModals()">cancel</button>
-                </div>
-                <div v-if="isDeletingFile" class="form-inline">
-                    <label>confirm file delete</label>
-                    <button class="btn btn-danger btn-sm" @click="handleDeleteFile()">delete</button>
-                    <button class="btn btn-warning btn-sm" @click="closeAllModals()">cancel</button>
-                </div>
-                <div v-if="isAccesFileOpen" class="form-inline">
-                    <label>hide access for</label>
-                    <span
-                        v-for="fileRole in editingFile.roles"
-                        :key="fileRole.id"
-                        class="badge badge-warning action role"
-                        @click="removeFileRole(fileRole.id)"
-                    >
-                        {{fileRole.role_name}} x
-                    </span>
-                    <select class="form-control" @change="addAccessFile">
-                        <option key="0" value="0">role</option>
-                        <option v-for="role in roles" :key="role.id" :value="role.id">
-                            {{role.role_name}}
-                        </option>
-                    </select>
-                    <button class="btn btn-success btn-sm" @click="updateFileAccess()">update</button>
-                    <button class="btn btn-warning btn-sm" @click="closeAllModals()">cancel</button>
-                </div>
             </div>
             <div v-for="subFolder in folder.folders" :key="subFolder.id">
                 <folder-tree :folder="subFolder" :move="move" :roles="roles" :only-view="onlyView"/>
@@ -113,12 +83,9 @@
         data() {
             return {
                 isAddingFolder: false,
-                isRanamingFile: false,
                 newFolderName: '',
-                editingFile: null,
                 isRanamingFolder: false,
                 editingFolder: null,
-                isDeletingFile: false,
                 isDeletingFolder: false,
                 isAccesFileOpen: false,
                 isAccesFolderOpen: false,
@@ -137,13 +104,7 @@
                 this.closeAllModals();
             },
             openEditFile(file) {
-                this.closeAllModals();
-                this.isRanamingFile = true;
-                this.editingFile = {...file};
-            },
-            handleEditFile() {
-                this.$eventBus.$emit('editFile', this.editingFile);
-                this.closeAllModals();
+                this.$eventBus.$emit('renameFileModal', file);
             },
             openEditFolder(folder) {
                 this.closeAllModals();
@@ -155,25 +116,17 @@
                 this.closeAllModals();
             },
             openDeletingFile(file) {
-                this.closeAllModals();
-                this.editingFile = {...file};
-                this.isDeletingFile = true;
+                this.$eventBus.$emit('deleteFileModal', file);
             },
             closeAllModals() {
                 this.isAddingFolder = false;
                 this.isRanamingFile = false;
                 this.newFolderName = '';
-                this.editingFile = null;
                 this.isRanamingFolder = false;
                 this.editingFolder = null;
-                this.isDeletingFile = false;
                 this.isDeletingFolder = false;
                 this.isAccesFileOpen = false;
                 this.isAccesFolderOpen = false;
-            },
-            handleDeleteFile() {
-                this.$eventBus.$emit('deleteFile', this.editingFile);
-                this.closeAllModals();
             },
             openDeleteFolder(folder) {
                 this.closeAllModals();
@@ -185,27 +138,7 @@
                 this.closeAllModals();
             },
             openAccessFile(file) {
-                this.editingFile = {...file};
-                this.isAccesFileOpen = true;
-            },
-            addAccessFile(event) {
-                const roleId = event.currentTarget.value;
-                if (!roleId || roleId === '0') {
-                    return;
-                }
-                const existingRole = this.editingFile.roles.find(item => item.id == roleId);
-                if (existingRole) {
-                    return;
-                }
-                const role = this.roles.find(item => item.id == roleId);
-                this.editingFile.roles.push(role);
-            },
-            removeFileRole(roleId) {
-                this.editingFile.roles = this.editingFile.roles.filter(role => role.id != roleId);
-            },
-            updateFileAccess() {
-                this.$eventBus.$emit('updateFileAccess', this.editingFile);
-                this.closeAllModals();
+                this.$eventBus.$emit('accessFileModal', file);
             },
             openAccessFolder(folder) {
                 this.editingFolder = {...folder};

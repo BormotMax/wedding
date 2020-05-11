@@ -79,12 +79,13 @@ class FilesController extends BaseController
      */
     public function update(UpdateFileRequest $request, File $file)
     {
+        $fileName = $request->has('name') ? $request->name: $file->name;
+        $folderId = $request->has('folder_id') ? $request->folder_id: $file->folder_id;
         if (
-            $request->has('folder_id') &&
-            File::where('name', $file->name)->where('folder_id', $request->folder_id)->exists()
+            File::where('name', $fileName)->where('folder_id', $folderId)->exists()
         ) {
             return response()->json([
-                'error' => 'file with this name already exist in this folder'
+                'error' => 'file with this name already exists in this folder'
             ]);
         }
 

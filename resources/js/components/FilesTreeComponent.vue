@@ -4,6 +4,48 @@
         <div>
             <folder-tree :folder="tree.root" :move="moveMode" :roles="roles" :only-view="onlyView"/>
         </div>
+        <modal name="edit-file">
+            <div class="card modal-card" v-if="editingFile">
+                <div class="card-header">
+                    Rename file <b>{{editingFile.name}}</b>
+                </div>
+                <div class="card-body">
+                    <input class="form-control" v-model="editingFile.name">
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleEditFile()">Rename</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('edit-file')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <modal name="file-access">
+            <div class="card modal-card" v-if="editingFile">
+                <div class="card-header">
+                    Hide acess to file <b>{{editingFile.name}}</b> to roles:
+                </div>
+                <div class="card-body">
+                    <span
+                        v-for="fileRole in editingFile.roles"
+                        :key="fileRole.id"
+                        class="badge badge-warning action role"
+                        @click="removeFileRole(fileRole.id)"
+                    >
+                        {{fileRole.role_name}} x
+                    </span>
+                    <select class="form-control" @change="addAccessFile">
+                        <option key="0" value="0">role</option>
+                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                            {{role.role_name}}
+                        </option>
+                    </select>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleUpdateFileAccess()">Update</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('file-access')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <v-dialog />
     </div>
 </template>
 
@@ -18,6 +60,7 @@
                 moveMode: false,
                 movingFile: null,
                 roles: [],
+                editingFile: null
             }
         },
         props: {
@@ -40,12 +83,12 @@
             this.$eventBus.$on('moveFile', this.switchMoveMode);
             this.$eventBus.$on('createFolder', this.createFolder);
             this.$eventBus.$on('moveHere', this.handleMove);
-            this.$eventBus.$on('editFile', this.handleEditFile);
             this.$eventBus.$on('editFolder', this.handleEditFolder);
-            this.$eventBus.$on('deleteFile', this.handleDeleteFile);
             this.$eventBus.$on('deleteFolder', this.handleDeleteFolder);
-            this.$eventBus.$on('updateFileAccess', this.handleUpdateFileAccess);
             this.$eventBus.$on('updateFolderAccess', this.handleUpdateFolderAccess);
+            this.$eventBus.$on('deleteFileModal', this.handleDeleteFileModal);
+            this.$eventBus.$on('renameFileModal', this.handleRenameModal);
+            this.$eventBus.$on('accessFileModal', this.handleAccessFileModal);
         },
         mounted() {
             this.fetchFolders();
@@ -55,12 +98,12 @@
             this.$parent.$off('newFile');
             this.$eventBus.$off('moveFile');
             this.$eventBus.$off('createFolder');
-            this.$eventBus.$off('editFile');
             this.$eventBus.$off('editFolder');
-            this.$eventBus.$off('deleteFile');
             this.$eventBus.$off('deleteFolder');
-            this.$eventBus.$off('updateFileAccess');
             this.$eventBus.$off('updateFolderAccess');
+            this.$eventBus.$off('deleteFileModal');
+            this.$eventBus.$off('renameFileModal');
+            this.$eventBus.$off('accessFileModal');
         },
         methods: {
             fetchFiles() {
@@ -156,8 +199,9 @@
                 this.moveMode = false;
                 this.updateFile(file);
             },
-            handleEditFile(file) {
-                this.updateFile(file);
+            handleEditFile() {
+                this.$modal.hide('edit-file');
+                this.updateFile(this.editingFile);
             },
             handleEditFolder(folder) {
                 const url = process.env.MIX_API_URL + '/admin/folders/' + folder.id;
@@ -202,7 +246,9 @@
                     console.log('ERRORS', err);
                 });
             },
-            handleUpdateFileAccess(file) {
+            handleUpdateFileAccess() {
+                this.$modal.hide('file-access');
+                const file = {...this.editingFile};
                 const url = process.env.MIX_API_URL + '/admin/files/access/' + file.id;
                 const data = {
                     roles: file.roles.map(role => role.id)
@@ -227,7 +273,53 @@
                 }).catch((err) => {
                     console.log('ERRORS', err);
                 });
+            },
+            handleDeleteFileModal(file) {
+                this.$modal.show('dialog', {
+                    title: 'Delete file',
+                    text: `Confirm delete file: ${file.name}`,
+                    buttons: [
+                        {
+                            title: 'Delete',
+                            handler: () => {
+                                this.handleDeleteFile(file);
+                                this.$modal.hide('dialog');
+                            }
+                        },
+                        {
+                            title: 'cancel'
+                        }
+                    ]
+                });
+            },
+            handleRenameModal(file) {
+                this.editingFile = {...file};
+                this.$modal.show('edit-file');
+            },
+            addAccessFile(event) {
+                const roleId = event.currentTarget.value;
+                if (!roleId || roleId === '0') {
+                    return;
+                }
+                const existingRole = this.editingFile.roles.find(item => item.id == roleId);
+                if (existingRole) {
+                    return;
+                }
+                const role = this.roles.find(item => item.id == roleId);
+                this.editingFile.roles.push(role);
+            },
+            removeFileRole(roleId) {
+                this.editingFile.roles = this.editingFile.roles.filter(role => role.id != roleId);
+            },
+            handleAccessFileModal(file) {
+                this.editingFile = {...file};
+                this.$modal.show('file-access');
             }
         }
     }
 </script>
+<style scoped>
+.card.modal-card {
+    height: 100%;
+}
+</style>
