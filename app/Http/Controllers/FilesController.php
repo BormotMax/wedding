@@ -63,7 +63,7 @@ class FilesController extends BaseController
         $roleId = $user->role->id;
 
         $files = File::whereDoesntHave('roles', function ($query) use ($roleId) {
-            $query->where('roles.id', '<>', $roleId);
+            $query->where('roles.id', '=', $roleId);
         })->with('roles')->get();
         return response()->json([
             'data' => [

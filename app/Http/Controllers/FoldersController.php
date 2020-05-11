@@ -49,7 +49,7 @@ class FoldersController extends BaseController
         $roleId = $user->role->id;
 
         $folders = Folder::whereDoesntHave('roles', function ($query) use ($roleId) {
-            $query->where('roles.id', '<>', $roleId);
+            $query->where('roles.id', '=', $roleId);
         })->with('roles')->get();
 
         return response()->json([
