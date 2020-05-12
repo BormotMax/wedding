@@ -5,7 +5,7 @@
             <span class="badge badge-warning action" @click="$eventBus.$emit('moveHere', folder.id)">move here</span>
         </span>
         <span class="actions">
-            <span class="badge badge-default action">actions</span>
+            <span v-if="!move && !onlyView" class="badge badge-default action">actions</span>
             <span v-if="!move && !onlyView" class="badge badge-info action" @click="openAddFolder(folder)">add folder</span>
             <span v-if="!move && folder.name !== 'root' && !onlyView">
                 <span class="badge badge-warning action" @click="openEditFolder(folder)">rename</span>
@@ -73,6 +73,9 @@
             openAccessFolder(folder) {
                 this.$eventBus.$emit('accessFolderModal', folder);
             },
+        },
+        mounted() {
+            console.log('folder', this.folder);
         }
     }
 </script>

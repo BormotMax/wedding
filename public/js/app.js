@@ -2187,6 +2187,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       tree.root.folders = this.getSubFolders(tree.root.id);
       tree.root.files = this.getFolderFiles(tree.root.id);
       this.tree = tree;
+      console.log('nre tree', tree);
     },
     getSubFolders: function getSubFolders(parentId) {
       var _this3 = this;
@@ -2208,6 +2209,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           files.push(file);
         }
       });
+      console.log('getFolderFiles', folderId, files);
       return files;
     },
     switchMoveMode: function switchMoveMode(file) {
@@ -2561,6 +2563,9 @@ __webpack_require__.r(__webpack_exports__);
     openAccessFolder: function openAccessFolder(folder) {
       this.$eventBus.$emit('accessFolderModal', folder);
     }
+  },
+  mounted: function mounted() {
+    console.log('folder', this.folder);
   }
 });
 
@@ -39426,9 +39431,11 @@ var render = function() {
       : _vm._e(),
     _vm._v(" "),
     _c("span", { staticClass: "actions" }, [
-      _c("span", { staticClass: "badge badge-default action" }, [
-        _vm._v("actions")
-      ]),
+      !_vm.move && !_vm.onlyView
+        ? _c("span", { staticClass: "badge badge-default action" }, [
+            _vm._v("actions")
+          ])
+        : _vm._e(),
       _vm._v(" "),
       !_vm.move && !_vm.onlyView
         ? _c(

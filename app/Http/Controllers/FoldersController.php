@@ -125,8 +125,9 @@ class FoldersController extends BaseController
      */
     public function updateAccess(UpdateAccessRequest $request, Folder $folder)
     {
+        $newRoles = $request->roles ?? [];
         $folder->roles()->detach();
-        foreach ($request->roles as $roleId) {
+        foreach ($newRoles as $roleId) {
             $folder->roles()->attach(Role::find($roleId));
         }
 

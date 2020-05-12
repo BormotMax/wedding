@@ -190,6 +190,7 @@
                 tree.root.folders = this.getSubFolders(tree.root.id);
                 tree.root.files = this.getFolderFiles(tree.root.id);
                 this.tree = tree;
+                console.log('nre tree', tree);
             },
             getSubFolders(parentId) {
                 let folders = [];
@@ -209,6 +210,7 @@
                         files.push(file);
                     }
                 });
+                console.log('getFolderFiles',folderId, files);
                 return files;
             },
             switchMoveMode(file) {

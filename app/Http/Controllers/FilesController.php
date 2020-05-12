@@ -119,8 +119,9 @@ class FilesController extends BaseController
      */
     public function updateAccess(UpdateAccessRequest $request, File $file)
     {
+        $newRoles = $request->roles ?? [];
         $file->roles()->detach();
-        foreach ($request->roles as $roleId) {
+        foreach ($newRoles as $roleId) {
             $file->roles()->attach(Role::find($roleId));
         }
 
