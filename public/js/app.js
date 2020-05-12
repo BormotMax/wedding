@@ -2037,6 +2037,61 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2047,9 +2102,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         root: {}
       },
       moveMode: false,
-      movingFile: null,
       roles: [],
-      editingFile: null
+      editingFile: null,
+      editingFolder: null
     };
   },
   props: {
@@ -2070,14 +2125,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   created: function created() {
     this.$parent.$on('newFile', this.fetchFolders);
     this.$eventBus.$on('moveFile', this.switchMoveMode);
-    this.$eventBus.$on('createFolder', this.createFolder);
     this.$eventBus.$on('moveHere', this.handleMove);
-    this.$eventBus.$on('editFolder', this.handleEditFolder);
-    this.$eventBus.$on('deleteFolder', this.handleDeleteFolder);
-    this.$eventBus.$on('updateFolderAccess', this.handleUpdateFolderAccess);
     this.$eventBus.$on('deleteFileModal', this.handleDeleteFileModal);
     this.$eventBus.$on('renameFileModal', this.handleRenameModal);
     this.$eventBus.$on('accessFileModal', this.handleAccessFileModal);
+    this.$eventBus.$on('deleteFolderModal', this.handleDeleteFolderModal);
+    this.$eventBus.$on('renameFolderModal', this.handleRenameFolderModal);
+    this.$eventBus.$on('accessFolderModal', this.handleAccessFolderModal);
+    this.$eventBus.$on('addFolderModal', this.handleAddFolderModal);
   },
   mounted: function mounted() {
     this.fetchFolders();
@@ -2086,13 +2141,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   beforeDestroy: function beforeDestroy() {
     this.$parent.$off('newFile');
     this.$eventBus.$off('moveFile');
-    this.$eventBus.$off('createFolder');
-    this.$eventBus.$off('editFolder');
-    this.$eventBus.$off('deleteFolder');
-    this.$eventBus.$off('updateFolderAccess');
+    this.$eventBus.$off('moveHere');
     this.$eventBus.$off('deleteFileModal');
     this.$eventBus.$off('renameFileModal');
     this.$eventBus.$off('accessFileModal');
+    this.$eventBus.$off('deleteFolderModal');
+    this.$eventBus.$off('renameFolderModal');
+    this.$eventBus.$off('accessFolderModal');
+    this.$eventBus.$off('addFolderModal');
   },
   methods: {
     fetchFiles: function fetchFiles() {
@@ -2156,19 +2212,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     },
     switchMoveMode: function switchMoveMode(file) {
       this.moveMode = true;
-      this.movingFile = file;
+      this.editingFile = file;
     },
-    createFolder: function createFolder(_ref) {
+    createFolder: function createFolder(folder) {
       var _this4 = this;
 
-      var name = _ref.name,
-          parentFolderId = _ref.parentFolderId;
       this.moveMode = false;
       var url = "http://127.0.0.1:8000" + '/admin/folders';
-      var data = {
-        name: name,
-        parent_folder_id: parentFolderId
-      };
+
+      var data = _objectSpread({}, folder);
+
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(url, data, this.apiHeaders).then(function (res) {
         if (res.data.data.success) {
           _this4.folders.push(res.data.data.folder);
@@ -2197,11 +2250,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     },
     handleMove: function handleMove(folderId) {
       var file = {
-        id: this.movingFile.id,
+        id: this.editingFile.id,
         folder_id: folderId,
-        name: this.movingFile.name
+        name: this.editingFile.name
       };
-      this.movingFile = null;
+      this.editingFile = null;
       this.moveMode = false;
       this.updateFile(file);
     },
@@ -2283,7 +2336,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         console.log('ERRORS', err);
       });
     },
-    handleUpdateFolderAccess: function handleUpdateFolderAccess(folder) {
+    updateFolderAccess: function updateFolderAccess(folder) {
       var _this11 = this;
 
       var url = "http://127.0.0.1:8000" + '/admin/folders/access/' + folder.id;
@@ -2350,6 +2403,73 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     handleAccessFileModal: function handleAccessFileModal(file) {
       this.editingFile = _objectSpread({}, file);
       this.$modal.show('file-access');
+    },
+    handleDeleteFolderModal: function handleDeleteFolderModal(folder) {
+      var _this13 = this;
+
+      this.$modal.show('dialog', {
+        title: 'Delete folder',
+        text: "Confirm delete folder: ".concat(folder.name),
+        buttons: [{
+          title: 'Delete',
+          handler: function handler() {
+            _this13.handleDeleteFolder(folder);
+
+            _this13.$modal.hide('dialog');
+          }
+        }, {
+          title: 'cancel'
+        }]
+      });
+    },
+    handleRenameFolderModal: function handleRenameFolderModal(folder) {
+      this.editingFolder = _objectSpread({}, folder);
+      this.$modal.show('edit-folder');
+    },
+    addAccessFolder: function addAccessFolder(event) {
+      var roleId = event.currentTarget.value;
+
+      if (!roleId || roleId === '0') {
+        return;
+      }
+
+      var existingRole = this.editingFolder.roles.find(function (item) {
+        return item.id == roleId;
+      });
+
+      if (existingRole) {
+        return;
+      }
+
+      var role = this.roles.find(function (item) {
+        return item.id == roleId;
+      });
+      this.editingFolder.roles.push(role);
+    },
+    removeFolderRole: function removeFolderRole(roleId) {
+      this.editingFolder.roles = this.editingFolder.roles.filter(function (role) {
+        return role.id != roleId;
+      });
+    },
+    handleAccessFolderModal: function handleAccessFolderModal(folder) {
+      this.editingFolder = _objectSpread({}, folder);
+      this.$modal.show('folder-access');
+    },
+    handleAddFolderModal: function handleAddFolderModal(folder) {
+      this.editingFolder = _objectSpread({}, folder);
+      this.$modal.show('add-folder');
+    },
+    handleAddFolder: function handleAddFolder() {
+      this.$modal.hide('add-folder');
+      this.createFolder(this.editingFolder);
+    },
+    handleRanameFolder: function handleRanameFolder() {
+      this.handleEditFolder(this.editingFolder);
+      this.$modal.hide('edit-folder');
+    },
+    handleUpdateFolderAccess: function handleUpdateFolderAccess() {
+      this.updateFolderAccess(this.editingFolder);
+      this.$modal.hide('folder-access');
     }
   }
 });
@@ -2367,48 +2487,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -2448,104 +2526,36 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       type: Boolean,
       "default": false
     },
-    roles: Array,
     onlyView: {
       type: Boolean,
       "default": false
     }
   },
-  data: function data() {
-    return {
-      isAddingFolder: false,
-      newFolderName: '',
-      isRanamingFolder: false,
-      editingFolder: null,
-      isDeletingFolder: false,
-      isAccesFileOpen: false,
-      isAccesFolderOpen: false
-    };
-  },
   methods: {
-    openAddFolder: function openAddFolder() {
-      this.closeAllModals();
-      this.isAddingFolder = true;
-    },
-    handleAddFolder: function handleAddFolder() {
-      this.$eventBus.$emit('createFolder', {
-        name: this.newFolderName,
-        parentFolderId: this.folder.id
-      });
-      this.closeAllModals();
+    openAddFolder: function openAddFolder(parentFolder) {
+      var newFolder = {
+        name: '',
+        parent_folder_id: parentFolder.id
+      };
+      this.$eventBus.$emit('addFolderModal', newFolder);
     },
     openEditFile: function openEditFile(file) {
       this.$eventBus.$emit('renameFileModal', file);
     },
     openEditFolder: function openEditFolder(folder) {
-      this.closeAllModals();
-      this.isRanamingFolder = true;
-      this.editingFolder = _objectSpread({}, folder);
-    },
-    handleEditFolder: function handleEditFolder() {
-      this.$eventBus.$emit('editFolder', this.editingFolder);
-      this.closeAllModals();
+      this.$eventBus.$emit('renameFolderModal', folder);
     },
     openDeletingFile: function openDeletingFile(file) {
       this.$eventBus.$emit('deleteFileModal', file);
     },
-    closeAllModals: function closeAllModals() {
-      this.isAddingFolder = false;
-      this.isRanamingFile = false;
-      this.newFolderName = '';
-      this.isRanamingFolder = false;
-      this.editingFolder = null;
-      this.isDeletingFolder = false;
-      this.isAccesFileOpen = false;
-      this.isAccesFolderOpen = false;
-    },
     openDeleteFolder: function openDeleteFolder(folder) {
-      this.closeAllModals();
-      this.editingFolder = _objectSpread({}, folder);
-      this.isDeletingFolder = true;
-    },
-    handleDeleteFolder: function handleDeleteFolder() {
-      this.$eventBus.$emit('deleteFolder', this.editingFolder);
-      this.closeAllModals();
+      this.$eventBus.$emit('deleteFolderModal', folder);
     },
     openAccessFile: function openAccessFile(file) {
       this.$eventBus.$emit('accessFileModal', file);
     },
     openAccessFolder: function openAccessFolder(folder) {
-      this.editingFolder = _objectSpread({}, folder);
-      this.isAccesFolderOpen = true;
-    },
-    addAccessFolder: function addAccessFolder(event) {
-      var roleId = event.currentTarget.value;
-
-      if (!roleId || roleId === '0') {
-        return;
-      }
-
-      var existingRole = this.editingFolder.roles.find(function (item) {
-        return item.id == roleId;
-      });
-
-      if (existingRole) {
-        return;
-      }
-
-      var role = this.roles.find(function (item) {
-        return item.id == roleId;
-      });
-      this.editingFolder.roles.push(role);
-    },
-    removeFolderRole: function removeFolderRole(roleId) {
-      this.editingFolder.roles = this.editingFolder.roles.filter(function (role) {
-        return role.id != roleId;
-      });
-    },
-    updateFolderAccess: function updateFolderAccess() {
-      this.$eventBus.$emit('updateFolderAccess', this.editingFolder);
-      this.closeAllModals();
+      this.$eventBus.$emit('accessFolderModal', folder);
     }
   }
 });
@@ -38976,7 +38986,6 @@ var render = function() {
             attrs: {
               folder: _vm.tree.root,
               move: _vm.moveMode,
-              roles: _vm.roles,
               "only-view": _vm.onlyView
             }
           })
@@ -39050,7 +39059,7 @@ var render = function() {
         _vm.editingFile
           ? _c("div", { staticClass: "card modal-card" }, [
               _c("div", { staticClass: "card-header" }, [
-                _vm._v("\n                Hide acess to file "),
+                _vm._v("\n                Hide access to file "),
                 _c("b", [_vm._v(_vm._s(_vm.editingFile.name))]),
                 _vm._v(" to roles:\n            ")
               ]),
@@ -39143,6 +39152,226 @@ var render = function() {
           : _vm._e()
       ]),
       _vm._v(" "),
+      _c("modal", { attrs: { name: "edit-folder" } }, [
+        _vm.editingFolder
+          ? _c("div", { staticClass: "card modal-card" }, [
+              _c("div", { staticClass: "card-header" }, [
+                _vm._v("\n                Rename folder "),
+                _c("b", [_vm._v(_vm._s(_vm.editingFolder.name))])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-body" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.editingFolder.name,
+                      expression: "editingFolder.name"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  domProps: { value: _vm.editingFolder.name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.editingFolder, "name", $event.target.value)
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-footer" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success pull-left",
+                    on: {
+                      click: function($event) {
+                        return _vm.handleRanameFolder()
+                      }
+                    }
+                  },
+                  [_vm._v("Rename")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-default pull-right",
+                    on: {
+                      click: function($event) {
+                        return _vm.$modal.hide("edit-folder")
+                      }
+                    }
+                  },
+                  [_vm._v("Cancel")]
+                )
+              ])
+            ])
+          : _vm._e()
+      ]),
+      _vm._v(" "),
+      _c("modal", { attrs: { name: "folder-access" } }, [
+        _vm.editingFolder
+          ? _c("div", { staticClass: "card modal-card" }, [
+              _c("div", { staticClass: "card-header" }, [
+                _vm._v("\n                Hide access to folder "),
+                _c("b", [_vm._v(_vm._s(_vm.editingFolder.name))]),
+                _vm._v(" to roles:\n            ")
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticClass: "card-body" },
+                [
+                  _vm._l(_vm.editingFolder.roles, function(folderRole) {
+                    return _c(
+                      "span",
+                      {
+                        key: folderRole.id,
+                        staticClass: "badge badge-warning action role",
+                        on: {
+                          click: function($event) {
+                            return _vm.removeFolderRole(folderRole.id)
+                          }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(folderRole.role_name) +
+                            " x\n                "
+                        )
+                      ]
+                    )
+                  }),
+                  _vm._v(" "),
+                  _c(
+                    "select",
+                    {
+                      staticClass: "form-control",
+                      on: { change: _vm.addAccessFolder }
+                    },
+                    [
+                      _c("option", { key: "0", attrs: { value: "0" } }, [
+                        _vm._v("role")
+                      ]),
+                      _vm._v(" "),
+                      _vm._l(_vm.roles, function(role) {
+                        return _c(
+                          "option",
+                          { key: role.id, domProps: { value: role.id } },
+                          [
+                            _vm._v(
+                              "\n                        " +
+                                _vm._s(role.role_name) +
+                                "\n                    "
+                            )
+                          ]
+                        )
+                      })
+                    ],
+                    2
+                  )
+                ],
+                2
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-footer" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success pull-left",
+                    on: {
+                      click: function($event) {
+                        return _vm.handleUpdateFolderAccess()
+                      }
+                    }
+                  },
+                  [_vm._v("Update")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-default pull-right",
+                    on: {
+                      click: function($event) {
+                        return _vm.$modal.hide("folder-access")
+                      }
+                    }
+                  },
+                  [_vm._v("Cancel")]
+                )
+              ])
+            ])
+          : _vm._e()
+      ]),
+      _vm._v(" "),
+      _c("modal", { attrs: { name: "add-folder" } }, [
+        _vm.editingFolder
+          ? _c("div", { staticClass: "card modal-card" }, [
+              _c("div", { staticClass: "card-header" }, [
+                _vm._v("\n                Add folder\n            ")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-body" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.editingFolder.name,
+                      expression: "editingFolder.name"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  domProps: { value: _vm.editingFolder.name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.editingFolder, "name", $event.target.value)
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "card-footer" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success pull-left",
+                    on: {
+                      click: function($event) {
+                        return _vm.handleAddFolder()
+                      }
+                    }
+                  },
+                  [_vm._v("Create")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-default pull-right",
+                    on: {
+                      click: function($event) {
+                        return _vm.$modal.hide("add-folder")
+                      }
+                    }
+                  },
+                  [_vm._v("Cancel")]
+                )
+              ])
+            ])
+          : _vm._e()
+      ]),
+      _vm._v(" "),
       _c("v-dialog")
     ],
     1
@@ -39199,7 +39428,7 @@ var render = function() {
             staticClass: "badge badge-info action",
             on: {
               click: function($event) {
-                return _vm.openAddFolder()
+                return _vm.openAddFolder(_vm.folder)
               }
             }
           },
@@ -39248,233 +39477,6 @@ var render = function() {
             [_vm._v("delete")]
           )
         ])
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.isAddingFolder
-      ? _c("div", { staticClass: "form-inline" }, [
-          _c("label", [_vm._v("new folder name")]),
-          _vm._v(" "),
-          _c("input", {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.newFolderName,
-                expression: "newFolderName"
-              }
-            ],
-            staticClass: "form-cotrol",
-            attrs: { type: "text" },
-            domProps: { value: _vm.newFolderName },
-            on: {
-              input: function($event) {
-                if ($event.target.composing) {
-                  return
-                }
-                _vm.newFolderName = $event.target.value
-              }
-            }
-          }),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-success btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.handleAddFolder()
-                }
-              }
-            },
-            [_vm._v("add")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-warning btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.closeAllModals()
-                }
-              }
-            },
-            [_vm._v("cancel")]
-          )
-        ])
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.isRanamingFolder
-      ? _c("div", { staticClass: "form-inline" }, [
-          _c("label", [_vm._v("edit folder name")]),
-          _vm._v(" "),
-          _c("input", {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.editingFolder.name,
-                expression: "editingFolder.name"
-              }
-            ],
-            staticClass: "form-cotrol",
-            attrs: { type: "text" },
-            domProps: { value: _vm.editingFolder.name },
-            on: {
-              input: function($event) {
-                if ($event.target.composing) {
-                  return
-                }
-                _vm.$set(_vm.editingFolder, "name", $event.target.value)
-              }
-            }
-          }),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-success btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.handleEditFolder()
-                }
-              }
-            },
-            [_vm._v("update")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-warning btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.closeAllModals()
-                }
-              }
-            },
-            [_vm._v("cancel")]
-          )
-        ])
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.isDeletingFolder
-      ? _c("div", { staticClass: "form-inline" }, [
-          _c("label", [_vm._v("confirm folder delete")]),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-danger btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.handleDeleteFolder()
-                }
-              }
-            },
-            [_vm._v("delete")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-warning btn-sm",
-              on: {
-                click: function($event) {
-                  return _vm.closeAllModals()
-                }
-              }
-            },
-            [_vm._v("cancel")]
-          )
-        ])
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.isAccesFolderOpen
-      ? _c(
-          "div",
-          { staticClass: "form-inline" },
-          [
-            _c("label", [_vm._v("hide access for")]),
-            _vm._v(" "),
-            _vm._l(_vm.editingFolder.roles, function(folderRole) {
-              return _c(
-                "span",
-                {
-                  key: folderRole.id,
-                  staticClass: "badge badge-warning action role",
-                  on: {
-                    click: function($event) {
-                      return _vm.removeFolderRole(folderRole.id)
-                    }
-                  }
-                },
-                [
-                  _vm._v(
-                    "\n            " +
-                      _vm._s(folderRole.role_name) +
-                      " x\n        "
-                  )
-                ]
-              )
-            }),
-            _vm._v(" "),
-            _c(
-              "select",
-              {
-                staticClass: "form-control",
-                on: { change: _vm.addAccessFolder }
-              },
-              [
-                _c("option", { key: "0", attrs: { value: "0" } }, [
-                  _vm._v("role")
-                ]),
-                _vm._v(" "),
-                _vm._l(_vm.roles, function(role) {
-                  return _c(
-                    "option",
-                    { key: role.id, domProps: { value: role.id } },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(role.role_name) +
-                          "\n            "
-                      )
-                    ]
-                  )
-                })
-              ],
-              2
-            ),
-            _vm._v(" "),
-            _c(
-              "button",
-              {
-                staticClass: "btn btn-success btn-sm",
-                on: {
-                  click: function($event) {
-                    return _vm.updateFolderAccess()
-                  }
-                }
-              },
-              [_vm._v("update")]
-            ),
-            _vm._v(" "),
-            _c(
-              "button",
-              {
-                staticClass: "btn btn-warning btn-sm",
-                on: {
-                  click: function($event) {
-                    return _vm.closeAllModals()
-                  }
-                }
-              },
-              [_vm._v("cancel")]
-            )
-          ],
-          2
-        )
       : _vm._e(),
     _vm._v(" "),
     _c(
@@ -39559,7 +39561,6 @@ var render = function() {
                 attrs: {
                   folder: subFolder,
                   move: _vm.move,
-                  roles: _vm.roles,
                   "only-view": _vm.onlyView
                 }
               })
