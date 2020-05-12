@@ -2,19 +2,23 @@
     <div class="folder-tree">
         <span class="badge badge-secondary title">{{folder.name}}</span>
         <span v-if="move && !onlyView">
-            <span class="b  adge badge-warning action" @click="$eventBus.$emit('moveHere', folder.id)">move here</span>
+            <span class="badge badge-warning action" @click="$eventBus.$emit('moveHere', folder.id)">move here</span>
         </span>
-        <span v-if="!move && !onlyView" class="badge badge-info action" @click="openAddFolder(folder)">add folder</span>
-        <span v-if="!move && folder.name !== 'root' && !onlyView">
-            <span class="badge badge-warning action" @click="openEditFolder(folder)">rename</span>
-            <span class="badge badge-info action" @click="openAccessFolder(folder)">access</span>
-            <span class="badge badge-danger action" @click="openDeleteFolder(folder)">delete</span>
+        <span class="actions">
+            <span class="badge badge-default action">actions</span>
+            <span v-if="!move && !onlyView" class="badge badge-info action" @click="openAddFolder(folder)">add folder</span>
+            <span v-if="!move && folder.name !== 'root' && !onlyView">
+                <span class="badge badge-warning action" @click="openEditFolder(folder)">rename</span>
+                <span class="badge badge-info action" @click="openAccessFolder(folder)">access</span>
+                <span class="badge badge-danger action" @click="openDeleteFolder(folder)">delete</span>
+            </span>
         </span>
         <div>
             <div v-if="!move">
                 <div v-for="file in folder.files" :key="file.id">
                     <span class="badge badge-light">{{file.name}}</span>
-                    <span v-if="!onlyView">
+                    <span v-if="!onlyView" class="actions">
+                        <span class="badge badge-default action">actions</span>
                         <span class="badge badge-warning action" @click="$eventBus.$emit('moveFile', file)">move</span>
                         <span class="badge badge-success action" @click="openEditFile(file)">rename</span>
                         <span class="badge badge-info action" @click="openAccessFile(file)">access</span>
@@ -82,5 +86,17 @@
 }
 .role {
     margin: 0 5px;
+}
+.actions .action {
+    display: none;
+}
+.actions .badge-default {
+    display:inline-block;
+}
+.actions:hover .action {
+    display:inline-block;
+}
+.actions:hover .badge-default {
+    display:none;
 }
 </style>

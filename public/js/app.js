@@ -2518,6 +2518,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
@@ -7124,7 +7128,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.folder-tree[data-v-1b0453d7] {\n    padding-left: 15px;\n}\n.action[data-v-1b0453d7] {\n    cursor: pointer;\n}\n.role[data-v-1b0453d7] {\n    margin: 0 5px;\n}\n", ""]);
+exports.push([module.i, "\n.folder-tree[data-v-1b0453d7] {\n    padding-left: 15px;\n}\n.action[data-v-1b0453d7] {\n    cursor: pointer;\n}\n.role[data-v-1b0453d7] {\n    margin: 0 5px;\n}\n.actions .action[data-v-1b0453d7] {\n    display: none;\n}\n.actions .badge-default[data-v-1b0453d7] {\n    display:inline-block;\n}\n.actions:hover .action[data-v-1b0453d7] {\n    display:inline-block;\n}\n.actions:hover .badge-default[data-v-1b0453d7] {\n    display:none;\n}\n", ""]);
 
 // exports
 
@@ -39409,7 +39413,7 @@ var render = function() {
           _c(
             "span",
             {
-              staticClass: "b  adge badge-warning action",
+              staticClass: "badge badge-warning action",
               on: {
                 click: function($event) {
                   return _vm.$eventBus.$emit("moveHere", _vm.folder.id)
@@ -39421,63 +39425,69 @@ var render = function() {
         ])
       : _vm._e(),
     _vm._v(" "),
-    !_vm.move && !_vm.onlyView
-      ? _c(
-          "span",
-          {
-            staticClass: "badge badge-info action",
-            on: {
-              click: function($event) {
-                return _vm.openAddFolder(_vm.folder)
-              }
-            }
-          },
-          [_vm._v("add folder")]
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    !_vm.move && _vm.folder.name !== "root" && !_vm.onlyView
-      ? _c("span", [
-          _c(
-            "span",
-            {
-              staticClass: "badge badge-warning action",
-              on: {
-                click: function($event) {
-                  return _vm.openEditFolder(_vm.folder)
-                }
-              }
-            },
-            [_vm._v("rename")]
-          ),
-          _vm._v(" "),
-          _c(
+    _c("span", { staticClass: "actions" }, [
+      _c("span", { staticClass: "badge badge-default action" }, [
+        _vm._v("actions")
+      ]),
+      _vm._v(" "),
+      !_vm.move && !_vm.onlyView
+        ? _c(
             "span",
             {
               staticClass: "badge badge-info action",
               on: {
                 click: function($event) {
-                  return _vm.openAccessFolder(_vm.folder)
+                  return _vm.openAddFolder(_vm.folder)
                 }
               }
             },
-            [_vm._v("access")]
-          ),
-          _vm._v(" "),
-          _c(
-            "span",
-            {
-              staticClass: "badge badge-danger action",
-              on: {
-                click: function($event) {
-                  return _vm.openDeleteFolder(_vm.folder)
-                }
-              }
-            },
-            [_vm._v("delete")]
+            [_vm._v("add folder")]
           )
-        ])
-      : _vm._e(),
+        : _vm._e(),
+      _vm._v(" "),
+      !_vm.move && _vm.folder.name !== "root" && !_vm.onlyView
+        ? _c("span", [
+            _c(
+              "span",
+              {
+                staticClass: "badge badge-warning action",
+                on: {
+                  click: function($event) {
+                    return _vm.openEditFolder(_vm.folder)
+                  }
+                }
+              },
+              [_vm._v("rename")]
+            ),
+            _vm._v(" "),
+            _c(
+              "span",
+              {
+                staticClass: "badge badge-info action",
+                on: {
+                  click: function($event) {
+                    return _vm.openAccessFolder(_vm.folder)
+                  }
+                }
+              },
+              [_vm._v("access")]
+            ),
+            _vm._v(" "),
+            _c(
+              "span",
+              {
+                staticClass: "badge badge-danger action",
+                on: {
+                  click: function($event) {
+                    return _vm.openDeleteFolder(_vm.folder)
+                  }
+                }
+              },
+              [_vm._v("delete")]
+            )
+          ])
+        : _vm._e()
+    ]),
     _vm._v(" "),
     _c(
       "div",
@@ -39492,7 +39502,13 @@ var render = function() {
                   ]),
                   _vm._v(" "),
                   !_vm.onlyView
-                    ? _c("span", [
+                    ? _c("span", { staticClass: "actions" }, [
+                        _c(
+                          "span",
+                          { staticClass: "badge badge-default action" },
+                          [_vm._v("actions")]
+                        ),
+                        _vm._v(" "),
                         _c(
                           "span",
                           {
