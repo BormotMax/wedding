@@ -1,9 +1,107 @@
 <template>
     <div class="container">
+        <error-messages />
         <h2>Files</h2>
         <div>
-            <folder-tree :folder="tree.root" :move="moveMode" :roles="roles" :only-view="onlyView"/>
+            <folder-tree :folder="tree.root" :move="moveMode" :only-view="onlyView"/>
         </div>
+        <modal name="edit-file">
+            <div class="card modal-card" v-if="editingFile">
+                <div class="card-header">
+                    Rename file <b>{{editingFile.name}}</b>
+                </div>
+                <div class="card-body">
+                    <input class="form-control" v-model="editingFile.name">
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleEditFile()">Rename</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('edit-file')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <modal name="file-access">
+            <div class="card modal-card" v-if="editingFile">
+                <div class="card-header">
+                    Hide access to file <b>{{editingFile.name}}</b> to roles:
+                </div>
+                <div class="card-body">
+                    <span
+                        v-for="fileRole in editingFile.roles"
+                        :key="fileRole.id"
+                        class="badge badge-warning action role"
+                        @click="removeFileRole(fileRole.id)"
+                    >
+                        {{fileRole.role_name}} x
+                    </span>
+                    <select class="form-control" @change="addAccessFile">
+                        <option key="0" value="0">role</option>
+                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                            {{role.role_name}}
+                        </option>
+                    </select>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleUpdateFileAccess()">Update</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('file-access')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <modal name="edit-folder">
+            <div class="card modal-card" v-if="editingFolder">
+                <div class="card-header">
+                    Rename folder <b>{{editingFolder.name}}</b>
+                </div>
+                <div class="card-body">
+                    <input class="form-control" v-model="editingFolder.name">
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleRanameFolder()">Rename</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('edit-folder')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <modal name="folder-access">
+            <div class="card modal-card" v-if="editingFolder">
+                <div class="card-header">
+                    Hide access to folder <b>{{editingFolder.name}}</b> to roles:
+                </div>
+                <div class="card-body">
+                    <span
+                        v-for="folderRole in editingFolder.roles"
+                        :key="folderRole.id"
+                        class="badge badge-warning action role"
+                        @click="removeFolderRole(folderRole.id)"
+                    >
+                        {{folderRole.role_name}} x
+                    </span>
+                    <select class="form-control" @change="addAccessFolder">
+                        <option key="0" value="0">role</option>
+                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                            {{role.role_name}}
+                        </option>
+                    </select>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleUpdateFolderAccess()">Update</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('folder-access')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <modal name="add-folder">
+            <div class="card modal-card" v-if="editingFolder">
+                <div class="card-header">
+                    Add folder
+                </div>
+                <div class="card-body">
+                    <input class="form-control" v-model="editingFolder.name">
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success pull-left" @click="handleAddFolder()">Create</button>
+                    <button class="btn btn-default pull-right" @click="$modal.hide('add-folder')">Cancel</button>
+                </div>
+            </div>
+        </modal>
+        <v-dialog />
     </div>
 </template>
 
@@ -16,8 +114,9 @@
                 folders: [],
                 tree: {root:{}},
                 moveMode: false,
-                movingFile: null,
                 roles: [],
+                editingFile: null,
+                editingFolder: null,
             }
         },
         props: {
@@ -38,14 +137,14 @@
         created() {
             this.$parent.$on('newFile', this.fetchFolders);
             this.$eventBus.$on('moveFile', this.switchMoveMode);
-            this.$eventBus.$on('createFolder', this.createFolder);
             this.$eventBus.$on('moveHere', this.handleMove);
-            this.$eventBus.$on('editFile', this.handleEditFile);
-            this.$eventBus.$on('editFolder', this.handleEditFolder);
-            this.$eventBus.$on('deleteFile', this.handleDeleteFile);
-            this.$eventBus.$on('deleteFolder', this.handleDeleteFolder);
-            this.$eventBus.$on('updateFileAccess', this.handleUpdateFileAccess);
-            this.$eventBus.$on('updateFolderAccess', this.handleUpdateFolderAccess);
+            this.$eventBus.$on('deleteFileModal', this.handleDeleteFileModal);
+            this.$eventBus.$on('renameFileModal', this.handleRenameModal);
+            this.$eventBus.$on('accessFileModal', this.handleAccessFileModal);
+            this.$eventBus.$on('deleteFolderModal', this.handleDeleteFolderModal);
+            this.$eventBus.$on('renameFolderModal', this.handleRenameFolderModal);
+            this.$eventBus.$on('accessFolderModal', this.handleAccessFolderModal);
+            this.$eventBus.$on('addFolderModal', this.handleAddFolderModal);
         },
         mounted() {
             this.fetchFolders();
@@ -54,13 +153,14 @@
         beforeDestroy() {
             this.$parent.$off('newFile');
             this.$eventBus.$off('moveFile');
-            this.$eventBus.$off('createFolder');
-            this.$eventBus.$off('editFile');
-            this.$eventBus.$off('editFolder');
-            this.$eventBus.$off('deleteFile');
-            this.$eventBus.$off('deleteFolder');
-            this.$eventBus.$off('updateFileAccess');
-            this.$eventBus.$off('updateFolderAccess');
+            this.$eventBus.$off('moveHere');
+            this.$eventBus.$off('deleteFileModal');
+            this.$eventBus.$off('renameFileModal');
+            this.$eventBus.$off('accessFileModal');
+            this.$eventBus.$off('deleteFolderModal');
+            this.$eventBus.$off('renameFolderModal');
+            this.$eventBus.$off('accessFolderModal');
+            this.$eventBus.$off('addFolderModal');
         },
         methods: {
             fetchFiles() {
@@ -69,7 +169,7 @@
                     this.files = res.data.data.files;
                     this.buildTree();
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             fetchFolders() {
@@ -78,7 +178,7 @@
                     this.folders = res.data.data.folders;
                     this.fetchFiles();
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             buildTree() {
@@ -114,22 +214,19 @@
             },
             switchMoveMode(file) {
                 this.moveMode = true;
-                this.movingFile = file;
+                this.editingFile = file;
             },
-            createFolder({name, parentFolderId}) {
+            createFolder(folder) {
                 this.moveMode = false;
                 const url = process.env.MIX_API_URL + '/admin/folders';
-                const data = {
-                    name,
-                    parent_folder_id: parentFolderId
-                };
+                const data = {...folder};
                 axios.post(url, data, this.apiHeaders).then((res) => {
                     if (res.data.data.success) {
                         this.folders.push(res.data.data.folder);
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             updateFile(file) {
@@ -143,21 +240,22 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleMove(folderId) {
                 const file = {
-                    id: this.movingFile.id,
+                    id: this.editingFile.id,
                     folder_id: folderId,
-                    name: this.movingFile.name
+                    name: this.editingFile.name
                 };
-                this.movingFile = null;
+                this.editingFile = null;
                 this.moveMode = false;
                 this.updateFile(file);
             },
-            handleEditFile(file) {
-                this.updateFile(file);
+            handleEditFile() {
+                this.$modal.hide('edit-file');
+                this.updateFile(this.editingFile);
             },
             handleEditFolder(folder) {
                 const url = process.env.MIX_API_URL + '/admin/folders/' + folder.id;
@@ -169,7 +267,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleDeleteFile(file) {
@@ -179,7 +277,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleDeleteFolder(folder) {
@@ -189,7 +287,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             fetchRoles() {
@@ -199,10 +297,12 @@
                         this.roles = res.data.data.roles.filter(role => role.role_name !== 'admin');
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
-            handleUpdateFileAccess(file) {
+            handleUpdateFileAccess() {
+                this.$modal.hide('file-access');
+                const file = {...this.editingFile};
                 const url = process.env.MIX_API_URL + '/admin/files/access/' + file.id;
                 const data = {
                     roles: file.roles.map(role => role.id)
@@ -212,10 +312,10 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
-            handleUpdateFolderAccess(folder) {
+            updateFolderAccess(folder) {
                 const url = process.env.MIX_API_URL + '/admin/folders/access/' + folder.id;
                 const data = {
                     roles: folder.roles.map(role => role.id)
@@ -225,9 +325,112 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
+            },
+            handleDeleteFileModal(file) {
+                this.$modal.show('dialog', {
+                    title: 'Delete file',
+                    text: `Confirm delete file: ${file.name}`,
+                    buttons: [
+                        {
+                            title: 'Delete',
+                            handler: () => {
+                                this.handleDeleteFile(file);
+                                this.$modal.hide('dialog');
+                            }
+                        },
+                        {
+                            title: 'cancel'
+                        }
+                    ]
+                });
+            },
+            handleRenameModal(file) {
+                this.editingFile = {...file};
+                this.$modal.show('edit-file');
+            },
+            addAccessFile(event) {
+                const roleId = event.currentTarget.value;
+                if (!roleId || roleId === '0') {
+                    return;
+                }
+                const existingRole = this.editingFile.roles.find(item => item.id == roleId);
+                if (existingRole) {
+                    return;
+                }
+                const role = this.roles.find(item => item.id == roleId);
+                this.editingFile.roles.push(role);
+            },
+            removeFileRole(roleId) {
+                this.editingFile.roles = this.editingFile.roles.filter(role => role.id != roleId);
+            },
+            handleAccessFileModal(file) {
+                this.editingFile = {...file};
+                this.$modal.show('file-access');
+            },
+            handleDeleteFolderModal(folder) {
+                this.$modal.show('dialog', {
+                    title: 'Delete folder',
+                    text: `Confirm delete folder: ${folder.name}`,
+                    buttons: [
+                        {
+                            title: 'Delete',
+                            handler: () => {
+                                this.handleDeleteFolder(folder);
+                                this.$modal.hide('dialog');
+                            }
+                        },
+                        {
+                            title: 'cancel'
+                        }
+                    ]
+                });
+            },
+            handleRenameFolderModal(folder) {
+                this.editingFolder = {...folder};
+                this.$modal.show('edit-folder');
+            },
+            addAccessFolder(event) {
+                const roleId = event.currentTarget.value;
+                if (!roleId || roleId === '0') {
+                    return;
+                }
+                const existingRole = this.editingFolder.roles.find(item => item.id == roleId);
+                if (existingRole) {
+                    return;
+                }
+                const role = this.roles.find(item => item.id == roleId);
+                this.editingFolder.roles.push(role);
+            },
+            removeFolderRole(roleId) {
+                this.editingFolder.roles = this.editingFolder.roles.filter(role => role.id != roleId);
+            },
+            handleAccessFolderModal(folder) {
+                this.editingFolder = {...folder};
+                this.$modal.show('folder-access');
+            },
+            handleAddFolderModal(folder) {
+                this.editingFolder = {...folder};
+                this.$modal.show('add-folder');
+            },
+            handleAddFolder() {
+                this.$modal.hide('add-folder');
+                this.createFolder(this.editingFolder);
+            },
+            handleRanameFolder() {
+                this.handleEditFolder(this.editingFolder);
+                this.$modal.hide('edit-folder');
+            },
+            handleUpdateFolderAccess() {
+                this.updateFolderAccess(this.editingFolder);
+                this.$modal.hide('folder-access');
             }
         }
     }
 </script>
+<style scoped>
+.card.modal-card {
+    height: 100%;
+}
+</style>

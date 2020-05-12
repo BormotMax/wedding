@@ -49,7 +49,7 @@ class FoldersController extends BaseController
         $roleId = $user->role->id;
 
         $folders = Folder::whereDoesntHave('roles', function ($query) use ($roleId) {
-            $query->where('roles.id', '<>', $roleId);
+            $query->where('roles.id', '=', $roleId);
         })->with('roles')->get();
 
         return response()->json([
@@ -67,6 +67,15 @@ class FoldersController extends BaseController
      */
     public function update(UpdateFolderRequest $request, Folder $folder)
     {
+        $parentId = $request->has('parent_folder_id') ? $request->parent_folder_id: $folder->parent_folder_id;
+        $name = $request->has('name') ? $request->name: $folder->name;
+        if (
+            Folder::where('name', $name)->where('parent_folder_id', $parentId)->exists()
+        ) {
+            return response()->json([
+                'error' => 'folder with this name already exists in this folder'
+            ]);
+        }
         $folder->update($request->all());
         return response()->json([
             'data' => 
@@ -116,8 +125,9 @@ class FoldersController extends BaseController
      */
     public function updateAccess(UpdateAccessRequest $request, Folder $folder)
     {
+        $newRoles = $request->roles ?? [];
         $folder->roles()->detach();
-        foreach ($request->roles as $roleId) {
+        foreach ($newRoles as $roleId) {
             $folder->roles()->attach(Role::find($roleId));
         }
 

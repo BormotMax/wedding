@@ -15,7 +15,7 @@ class UpdateAccessRequest extends FormRequest
     public function rules()
     {
         return [
-            'roles' => 'required|array',
+            'roles' => 'sometimes|array',
             'roles.*' => 'required|exists:roles,id',
         ];
     }
