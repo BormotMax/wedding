@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <error-messages />
         <h2>Files</h2>
         <div>
             <folder-tree :folder="tree.root" :move="moveMode" :only-view="onlyView"/>
@@ -168,7 +169,7 @@
                     this.files = res.data.data.files;
                     this.buildTree();
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             fetchFolders() {
@@ -177,7 +178,7 @@
                     this.folders = res.data.data.folders;
                     this.fetchFiles();
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             buildTree() {
@@ -190,7 +191,6 @@
                 tree.root.folders = this.getSubFolders(tree.root.id);
                 tree.root.files = this.getFolderFiles(tree.root.id);
                 this.tree = tree;
-                console.log('nre tree', tree);
             },
             getSubFolders(parentId) {
                 let folders = [];
@@ -210,7 +210,6 @@
                         files.push(file);
                     }
                 });
-                console.log('getFolderFiles',folderId, files);
                 return files;
             },
             switchMoveMode(file) {
@@ -227,7 +226,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             updateFile(file) {
@@ -241,7 +240,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleMove(folderId) {
@@ -268,7 +267,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleDeleteFile(file) {
@@ -278,7 +277,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleDeleteFolder(folder) {
@@ -288,7 +287,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             fetchRoles() {
@@ -298,7 +297,7 @@
                         this.roles = res.data.data.roles.filter(role => role.role_name !== 'admin');
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleUpdateFileAccess() {
@@ -313,7 +312,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             updateFolderAccess(folder) {
@@ -326,7 +325,7 @@
                         this.fetchFolders();
                     }
                 }).catch((err) => {
-                    console.log('ERRORS', err);
+                    this.$eventBus.$emit('errorMessage', err);
                 });
             },
             handleDeleteFileModal(file) {

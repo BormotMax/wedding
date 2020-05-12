@@ -22,6 +22,7 @@ window.Vue = require('vue');
 Vue.component('admin-files', require('./components/AdminFilesComponent').default);
 Vue.component('files-tree', require('./components/FilesTreeComponent').default);
 Vue.component('folder-tree', require('./components/FolderTree').default);
+Vue.component('error-messages', require('./components/ErrorMessages').default);
 import VModal from 'vue-js-modal';
 Vue.use(VModal, { dialog: true});
 

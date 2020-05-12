@@ -73,9 +73,6 @@
             openAccessFolder(folder) {
                 this.$eventBus.$emit('accessFolderModal', folder);
             },
-        },
-        mounted() {
-            console.log('folder', this.folder);
         }
     }
 </script>
