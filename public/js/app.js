@@ -1947,7 +1947,7 @@ __webpack_require__.r(__webpack_exports__);
       var formData = new FormData();
       formData.append('file', this.file);
       formData.append('_token', this.csrf);
-      var url = "http://127.0.0.1:8000" + '/admin/files';
+      var url = "http://www.testmax.space" + '/admin/files';
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(url, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -2202,7 +2202,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     fetchFiles: function fetchFiles() {
       var _this = this;
 
-      var url = "http://127.0.0.1:8000" + '/files/get';
+      var url = "http://www.testmax.space" + '/files/get';
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(url, this.apiHeaders).then(function (res) {
         _this.files = res.data.data.files;
 
@@ -2214,7 +2214,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     fetchFolders: function fetchFolders() {
       var _this2 = this;
 
-      var url = "http://127.0.0.1:8000" + '/folders/get';
+      var url = "http://www.testmax.space" + '/folders/get';
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(url, this.apiHeaders).then(function (res) {
         _this2.folders = res.data.data.folders;
 
@@ -2266,7 +2266,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       var _this4 = this;
 
       this.moveMode = false;
-      var url = "http://127.0.0.1:8000" + '/admin/folders';
+      var url = "http://www.testmax.space" + '/admin/folders';
 
       var data = _objectSpread({}, folder);
 
@@ -2283,7 +2283,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     updateFile: function updateFile(file) {
       var _this5 = this;
 
-      var url = "http://127.0.0.1:8000" + '/admin/files/' + file.id;
+      var url = "http://www.testmax.space" + '/admin/files/' + file.id;
       var data = {
         folder_id: file.folder_id,
         name: file.name
@@ -2313,7 +2313,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     handleEditFolder: function handleEditFolder(folder) {
       var _this6 = this;
 
-      var url = "http://127.0.0.1:8000" + '/admin/folders/' + folder.id;
+      var url = "http://www.testmax.space" + '/admin/folders/' + folder.id;
       var data = {
         name: folder.name
       };
@@ -2328,7 +2328,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     handleDeleteFile: function handleDeleteFile(file) {
       var _this7 = this;
 
-      var url = "http://127.0.0.1:8000" + '/admin/files/' + file.id;
+      var url = "http://www.testmax.space" + '/admin/files/' + file.id;
       axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](url, this.apiHeaders).then(function (res) {
         if (res.data.data.success) {
           _this7.fetchFolders();
@@ -2340,7 +2340,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     handleDeleteFolder: function handleDeleteFolder(folder) {
       var _this8 = this;
 
-      var url = "http://127.0.0.1:8000" + '/admin/folders/' + folder.id;
+      var url = "http://www.testmax.space" + '/admin/folders/' + folder.id;
       axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](url, this.apiHeaders).then(function (res) {
         if (res.data.data.success) {
           _this8.fetchFolders();
@@ -2352,7 +2352,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     fetchRoles: function fetchRoles() {
       var _this9 = this;
 
-      var url = "http://127.0.0.1:8000" + '/roles';
+      var url = "http://www.testmax.space" + '/roles';
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(url, this.apiHeaders).then(function (res) {
         if (res.data.data.roles) {
           _this9.roles = res.data.data.roles.filter(function (role) {
@@ -2370,7 +2370,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
       var file = _objectSpread({}, this.editingFile);
 
-      var url = "http://127.0.0.1:8000" + '/admin/files/access/' + file.id;
+      var url = "http://www.testmax.space" + '/admin/files/access/' + file.id;
       var data = {
         roles: file.roles.map(function (role) {
           return role.id;
@@ -2387,7 +2387,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     updateFolderAccess: function updateFolderAccess(folder) {
       var _this11 = this;
 
-      var url = "http://127.0.0.1:8000" + '/admin/folders/access/' + folder.id;
+      var url = "http://www.testmax.space" + '/admin/folders/access/' + folder.id;
       var data = {
         roles: folder.roles.map(function (role) {
           return role.id;
